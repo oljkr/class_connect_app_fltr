@@ -1,8 +1,15 @@
 import 'package:class_connect_app_fltr/screens/home_screen.dart';
+import 'package:class_connect_app_fltr/services/supabase_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  // .env 파일 로드
+  await dotenv.load(fileName: ".env");
+  await SupabaseService().initialize();
+
   runApp(const MyApp());
 }
 
