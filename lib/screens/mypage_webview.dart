@@ -26,7 +26,9 @@ class _MyPageWebViewState extends State<MyPageWebView> {
     }
   }
 
-  static const String _mypageUrl = 'https://www.sososi.com/mypage';
+  // static const String _mypageUrl = 'https://www.sososi.com/mypage';
+  // static const String _mypageUrl = 'https://www.sososi.com/redirect';
+  static const String _mypageUrl = 'https://www.sososi.com/dashboard/class_applications';
 
   @override
   Widget build(BuildContext context) {

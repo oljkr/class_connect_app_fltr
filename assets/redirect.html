@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Redirecting...</title>
+</head>
+<body>Redirecting...</body>
+<script>
+    (function () {
+      const raw = window.sessionData;
+      if (!raw) {
+        document.body.innerText = "세션 데이터 없음";
+        return;
+      }
+
+      try {
+        const session = JSON.parse(raw);
+        localStorage.setItem("sb-vismpynytzpoaspqrcvn-auth-token", JSON.stringify(session));
+        location.href = "__TARGET_URL__";
+      } catch (e) {
+        document.body.innerText = "에러: " + e;
+      }
+    })();
+</script>
+</html>

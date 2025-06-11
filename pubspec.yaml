@@ -40,6 +40,10 @@ dependencies:
   flutter_svg: ^2.1.0
   flutter_dotenv: ^5.2.1
   google_sign_in: ^6.2.2
+  webview_flutter_android: ^3.10.0 # 이 이상 필요, 너무 최신 (예: 3.16.x)는 피하세요!
+  webview_flutter_wkwebview: ^3.14.0
+  webview_cookie_manager: ^2.0.5
+
 
 dev_dependencies:
   flutter_test:
@@ -65,6 +69,7 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
+    - assets/
     - .env
 
   # An image asset can refer to one or more resolution-specific "variants", see
