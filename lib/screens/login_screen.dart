@@ -277,8 +277,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 padding: EdgeInsets.symmetric(
                                     vertical: 2, horizontal: 10),
                                 child: GestureDetector(
-                                  // onTap: _nativeGoogleSignIn,
-                                  onTap: _webSocialLogin,
+                                  onTap: _nativeGoogleSignIn,
+                                  // onTap: _webSocialLogin,
                                   child: Row(
                                     children: [
                                       SvgPicture.network(
