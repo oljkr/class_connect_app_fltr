@@ -9,6 +9,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'home_screen.dart';
 import 'dart:ui'; // ImageFilter를 사용하기 위해 추가
 import 'package:flutter_svg/flutter_svg.dart'; // flutter_svg 패키지 임포트
+import 'package:app_links/app_links.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -23,6 +24,7 @@ class _LoginScreenState extends State<LoginScreen> {
   late final StreamSubscription<AuthState> _authStateSubscription;
   Session? session;
   bool _handledLoginRedirect = false;
+  final supabase = Supabase.instance.client;
 
   @override
   void initState() {
@@ -104,7 +106,7 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       final res = await Supabase.instance.client.auth.signInWithOAuth(
         OAuthProvider.kakao,
-        redirectTo: kIsWeb ? null : 'tarotapp://login-callback/',
+        redirectTo: kIsWeb ? null : 'classapp://login-callback/',
       );
 
       if (res == false) {
@@ -156,8 +158,11 @@ class _LoginScreenState extends State<LoginScreen> {
         accessToken: accessToken,
       );
 
-      if (response.session != null) {
+      final session = response.session;
+      if (session != null) {
         print('Supabase sign-in successful.');
+        print(session.accessToken);
+        print(session.refreshToken);
         // Navigator.pushReplacementNamed(context, '/mypage');
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(
@@ -172,6 +177,22 @@ class _LoginScreenState extends State<LoginScreen> {
           _errorMessage = 'Supabase sign-in failed.';
         });
       }
+    } catch (e) {
+      print('An error occurred during Google sign-in: $e');
+      if (e is PlatformException) {
+        print(
+            'Error details: ${e.message}, code: ${e.code}, details: ${e.details}');
+      }
+      setState(() {
+        _errorMessage = 'An error occurred during Google sign-in: $e';
+      });
+    }
+  }
+
+  Future<void> _webSocialLogin() async {
+    try {
+      bool loginSuccess = await supabase.auth.signInWithOAuth(OAuthProvider.google,redirectTo: 'classapp://login-callback/',);
+      print('loginSuccess: $loginSuccess');
     } catch (e) {
       print('An error occurred during Google sign-in: $e');
       if (e is PlatformException) {
@@ -256,7 +277,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 padding: EdgeInsets.symmetric(
                                     vertical: 2, horizontal: 10),
                                 child: GestureDetector(
-                                  onTap: _nativeGoogleSignIn,
+                                  // onTap: _nativeGoogleSignIn,
+                                  onTap: _webSocialLogin,
                                   child: Row(
                                     children: [
                                       SvgPicture.network(

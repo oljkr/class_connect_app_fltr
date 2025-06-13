@@ -31,6 +31,12 @@ class _AuthenticatedWebViewState extends State<AuthenticatedWebView> {
 
   Future<void> _initWebView() async {
     final session = Supabase.instance.client.auth.currentSession;
+    print('_checkLoginStatus:: session: $session');
+    final accessToken = session?.accessToken;
+    final refreshToken = session?.refreshToken;
+
+    print('🟢 accessToken: $accessToken');
+    print('🟢 refreshToken: $refreshToken');
 
     if (session == null) {
       debugPrint("❗ Supabase 세션이 존재하지 않습니다.");
@@ -58,14 +64,16 @@ class _AuthenticatedWebViewState extends State<AuthenticatedWebView> {
     // ]);
 
     await cookieManager.setCookies([
-      Cookie('sb-access-token', session.accessToken)
+      Cookie('sb-vismpynytzpoaspqrcvn-auth-token.0', session.accessToken)
         ..domain = 'www.sososi.com'
         ..expires = DateTime.now().add(Duration(days: 10))
+        ..path = '/'
         ..httpOnly = false,
 
-      Cookie('sb-refresh-token', session.refreshToken ?? '')
+      Cookie('sb-vismpynytzpoaspqrcvn-auth-token.1', session.refreshToken ?? '')
         ..domain = 'www.sososi.com'
         ..expires = DateTime.now().add(Duration(days: 30))
+        ..path = '/'
         ..httpOnly = false,
     ]);
 

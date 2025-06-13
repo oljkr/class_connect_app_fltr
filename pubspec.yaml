@@ -43,6 +43,7 @@ dependencies:
   webview_flutter_android: ^3.10.0 # 이 이상 필요, 너무 최신 (예: 3.16.x)는 피하세요!
   webview_flutter_wkwebview: ^3.14.0
   webview_cookie_manager: ^2.0.5
+  app_links: ^6.4.0
 
 
 dev_dependencies:
