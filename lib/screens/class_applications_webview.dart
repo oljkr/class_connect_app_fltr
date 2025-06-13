@@ -3,14 +3,14 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../widgets/authenticated_webview.dart';
 import 'login_screen.dart';
 
-class MyPageWebView extends StatefulWidget {
-  const MyPageWebView({super.key});
+class ClassApplicationsWebView extends StatefulWidget {
+  const ClassApplicationsWebView({super.key});
 
   @override
-  State<MyPageWebView> createState() => _MyPageWebViewState();
+  State<ClassApplicationsWebView> createState() => _ClassApplicationsWebViewState();
 }
 
-class _MyPageWebViewState extends State<MyPageWebView> {
+class _ClassApplicationsWebViewState extends State<ClassApplicationsWebView> {
   @override
   void initState() {
     super.initState();
@@ -28,8 +28,8 @@ class _MyPageWebViewState extends State<MyPageWebView> {
 
   // static const String _mypageUrl = 'https://www.sososi.com/mypage';
   // static const String _mypageUrl = 'https://www.sososi.com/redirect';
-  static const String _mypageUrl = 'https://www.sososi.com/debug-cookies';
-  // static const String _mypageUrl = 'https://www.sososi.com/dashboard/class_applications';
+  // static const String _mypageUrl = 'https://www.sososi.com/debug-cookies';
+  static const String _mypageUrl = 'https://www.sososi.com/dashboard/class_applications';
 
   @override
   Widget build(BuildContext context) {

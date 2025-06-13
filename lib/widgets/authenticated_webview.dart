@@ -63,17 +63,28 @@ class _AuthenticatedWebViewState extends State<AuthenticatedWebView> {
     //     ..httpOnly = false
     // ]);
 
-    await cookieManager.setCookies([
-      Cookie('sb-vismpynytzpoaspqrcvn-auth-token.0', session.accessToken)
-        ..domain = 'www.sososi.com'
-        ..expires = DateTime.now().add(Duration(days: 10))
-        ..path = '/'
-        ..httpOnly = false,
+    // await cookieManager.setCookies([
+    //   Cookie('sb-vismpynytzpoaspqrcvn-auth-token.0', session.accessToken)
+    //     ..domain = 'www.sososi.com'
+    //     ..expires = DateTime.now().add(Duration(days: 10))
+    //     ..path = '/'
+    //     ..httpOnly = false,
+    //
+    //   Cookie('sb-vismpynytzpoaspqrcvn-auth-token.1', session.refreshToken ?? '')
+    //     ..domain = 'www.sososi.com'
+    //     ..expires = DateTime.now().add(Duration(days: 30))
+    //     ..path = '/'
+    //     ..httpOnly = false,
+    // ]);
 
-      Cookie('sb-vismpynytzpoaspqrcvn-auth-token.1', session.refreshToken ?? '')
+    await cookieManager.setCookies([
+      Cookie('supabase.auth.token', Uri.encodeComponent(jsonEncode({
+        'access_token': accessToken,
+        'refresh_token': refreshToken,
+      })))
         ..domain = 'www.sososi.com'
-        ..expires = DateTime.now().add(Duration(days: 30))
         ..path = '/'
+        ..expires = DateTime.now().add(Duration(days: 10))
         ..httpOnly = false,
     ]);
 
