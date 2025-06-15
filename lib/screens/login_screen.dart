@@ -167,7 +167,7 @@ class _LoginScreenState extends State<LoginScreen> {
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(
             builder: (context) =>
-                HomeScreen(isFirstRun: false, initialIndex: 2),
+                HomeScreen(isFirstRun: false, initialIndex: 3),
           ),
               (Route<dynamic> route) => false, // 모든 이전 경로를 제거
         );
@@ -281,11 +281,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                   // onTap: _webSocialLogin,
                                   child: Row(
                                     children: [
-                                      SvgPicture.network(
-                                        'https://vismpynytzpoaspqrcvn.supabase.co/storage/v1/object/public/sososi/googleSocialLoginLogo1.svg',
-                                        height: 50,
+                                      SvgPicture.asset(
+                                        'assets/googleSocialLoginLogo1.svg',  // SVG 파일 경로
+                                        height: 50, // 원하는 크기로 조정
                                         width: 50,
-                                        placeholderBuilder: (BuildContext context) => CircularProgressIndicator(),
                                       ),
                                       SizedBox(width: 10),
                                       Expanded(
@@ -336,22 +335,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                   onTap: () => _socialLogin('kakao'),
                                   child: Row(
                                     children: [
-                                      Image.network(
-                                        'https://vismpynytzpoaspqrcvn.supabase.co/storage/v1/object/public/sososi/kakaoLoginLogo.png',
-                                        height: 26,
-                                        width: 26,
-                                        fit: BoxFit.contain, // 필요시 추가
-                                        loadingBuilder: (context, child, loadingProgress) {
-                                          if (loadingProgress == null) return child;
-                                          return SizedBox(
-                                            height: 26,
-                                            width: 26,
-                                            child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                                          );
-                                        },
-                                        errorBuilder: (context, error, stackTrace) {
-                                          return Icon(Icons.error, size: 26);
-                                        },
+                                      Image.asset(
+                                        'assets/kakaoLoginLogo.png',  // 이미지 경로
+                                        height: 26,  // 이미지 높이
+                                        width: 26,   // 이미지 너비
                                       ),
                                       SizedBox(width: 23),
                                       Expanded(
