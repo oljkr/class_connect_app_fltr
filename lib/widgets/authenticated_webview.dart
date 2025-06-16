@@ -9,6 +9,8 @@ import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 import 'package:webview_cookie_manager/webview_cookie_manager.dart';
 
+import '../screens/settings_screen.dart';
+
 class AuthenticatedWebView extends StatefulWidget {
   final String url;
 
@@ -109,6 +111,16 @@ class _AuthenticatedWebViewState extends State<AuthenticatedWebView> {
     _controller.setBackgroundColor(Colors.white);
 
     _controller.setNavigationDelegate(NavigationDelegate(
+      onNavigationRequest: (request) {
+        if (request.url == 'sososi://go-to-native-settings') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const SettingsScreen()),
+          );
+          return NavigationDecision.prevent; // 웹뷰에선 열지 않도록
+        }
+        return NavigationDecision.navigate;
+      },
       onPageFinished: (url) {
         log("✅ 페이지 로딩 완료: $url");
       },
