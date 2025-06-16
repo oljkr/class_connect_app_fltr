@@ -9,6 +9,7 @@ import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 import 'package:webview_cookie_manager/webview_cookie_manager.dart';
 
+import '../screens/home_screen.dart';
 import '../screens/settings_screen.dart';
 
 class AuthenticatedWebView extends StatefulWidget {
@@ -111,14 +112,34 @@ class _AuthenticatedWebViewState extends State<AuthenticatedWebView> {
     _controller.setBackgroundColor(Colors.white);
 
     _controller.setNavigationDelegate(NavigationDelegate(
-      onNavigationRequest: (request) {
-        if (request.url == 'sososi://go-to-native-settings') {
+      onNavigationRequest: (request) async {
+        final url = request.url;
+
+        if (url == 'sososi://go-to-native-settings') {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const SettingsScreen()),
           );
           return NavigationDecision.prevent; // 웹뷰에선 열지 않도록
         }
+
+        if (url == 'sososi://logout') {
+          debugPrint("📲 딥링크 로그아웃 감지됨 → Supabase 로그아웃 실행");
+
+          await Supabase.instance.client.auth.signOut();
+
+          if (!mounted) return NavigationDecision.prevent;
+
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(
+              builder: (context) =>
+                  HomeScreen(isFirstRun: false, initialIndex: 0),
+            ),
+                (Route<dynamic> route) => false, // 모든 이전 경로를 제거
+          );
+          return NavigationDecision.prevent;
+        }
+
         return NavigationDecision.navigate;
       },
       onPageFinished: (url) {
