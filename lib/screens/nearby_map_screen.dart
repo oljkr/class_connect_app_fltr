@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -69,7 +70,8 @@ class _NearbyMapScreenState extends State<NearbyMapScreen> {
         final title = loc['title']?.toString() ?? '클래스';
 
         // final icon = await createCustomMarkerBitmap(title);
-        final icon = await createBalloonMarkerBitmap(title);
+        // final icon = await createCleanBalloonMarker(title);
+        final icon = await createPillBalloonMarker(title);
 
         newMarkers.add(
           Marker(
@@ -132,17 +134,14 @@ class _NearbyMapScreenState extends State<NearbyMapScreen> {
   }
 
   Future<BitmapDescriptor> createBalloonMarkerBitmap(String text) async {
-    // 👇 padding 값 추가
     const double paddingX = 5;
     const double paddingY = 5;
+    const int maxLength = 25;
 
-    // 1. 텍스트 자르기
-    const maxLength = 25;
     if (text.length > maxLength) {
       text = text.substring(0, maxLength) + '...';
     }
 
-    // 2. 마커 크기 설정
     const int width = 400;
     const int height = 140;
     const int balloonHeight = 110;
@@ -151,46 +150,42 @@ class _NearbyMapScreenState extends State<NearbyMapScreen> {
     final recorder = ui.PictureRecorder();
     final canvas = Canvas(recorder);
 
-    // 3. 그림자 페인트
-    final shadowPaint = Paint()
-      ..color = Colors.deepOrange.withOpacity(1.0)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
+    const double offsetX = 10;
+    const double offsetY = 10;
 
-    // 4. 배경 박스 그림자
-    const double shadowOffsetX = 10;
-    const double shadowOffsetY = 10;
-
-// 그림자 및 박스 그릴 때 좌표 보정 적용
     final boxRect = Rect.fromLTWH(
-      shadowOffsetX,
-      shadowOffsetY,
-      width.toDouble() - shadowOffsetX * 2,
+      offsetX,
+      offsetY,
+      width.toDouble() - offsetX * 2,
       balloonHeight.toDouble(),
     );
 
-    final boxRRect = RRect.fromRectAndRadius(boxRect.shift(const Offset(0, 0)), const Radius.circular(24));
-    canvas.drawRRect(boxRRect, shadowPaint);
+    final boxRRect = RRect.fromRectAndRadius(boxRect, const Radius.circular(24));
 
-    // 5. 꼬리 그림자
-    final shadowTailPath = Path()
-      ..moveTo(width / 2 - 25 + 2, balloonHeight + 4)
-      ..lineTo(width / 2 + 2, (balloonHeight + tailHeight + 4))
-      ..lineTo(width / 2 + 25 + 2, balloonHeight + 4)
-      ..close();
-    canvas.drawPath(shadowTailPath, shadowPaint);
+    // 1. 흰 배경용 페인트
+    final fillPaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
 
-    // 6. 흰 배경 본체
-    final fillPaint = Paint()..color = Colors.white;
-    canvas.drawRRect(RRect.fromRectAndRadius(boxRect, const Radius.circular(24)), fillPaint);
+    // 2. 외곽선 페인트
+    final borderPaint = Paint()
+      ..color = const Color(0xFFfc17d2)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 6;
 
-    final tailPath = Path()
+    // 3. 풍선 + 꼬리 결합 Path
+    final balloonPath = Path()
+      ..addRRect(boxRRect)
       ..moveTo(width / 2 - 25, balloonHeight.toDouble())
       ..lineTo(width / 2, (balloonHeight + tailHeight).toDouble())
       ..lineTo(width / 2 + 25, balloonHeight.toDouble())
       ..close();
-    canvas.drawPath(tailPath, fillPaint);
 
-    // 7. 텍스트
+    // 4. 배경 채우기 → 외곽선 그리기
+    canvas.drawPath(balloonPath, fillPaint);
+    canvas.drawPath(balloonPath, borderPaint);
+
+    // 5. 텍스트
     final textPainter = TextPainter(
       text: TextSpan(
         text: text,
@@ -206,20 +201,269 @@ class _NearbyMapScreenState extends State<NearbyMapScreen> {
 
     textPainter.layout(
       minWidth: 0,
-      maxWidth: boxRect.width - paddingX * 2, // 좌우 여백 고려
+      maxWidth: boxRect.width - paddingX * 2,
     );
-    textPainter.paint(canvas, Offset(
-      boxRect.left + paddingX,
-      boxRect.top + (boxRect.height - textPainter.height) / 2 - paddingY / 2,
-    ),);
 
-    // 8. 이미지 생성
+    textPainter.paint(
+      canvas,
+      Offset(
+        boxRect.left + paddingX,
+        boxRect.top + (boxRect.height - textPainter.height) / 2 - paddingY / 2,
+      ),
+    );
+
+    // 6. 이미지 생성
     final picture = recorder.endRecording();
     final img = await picture.toImage(width, height);
     final bytes = await img.toByteData(format: ui.ImageByteFormat.png);
 
     return BitmapDescriptor.fromBytes(bytes!.buffer.asUint8List());
   }
+
+  Future<BitmapDescriptor> createCleanBalloonMarker(String text) async {
+    const int width = 320;
+    const int height = 130;
+    const int tailHeight = 15;
+    const double radius = 24;
+
+    // 텍스트 길이 자르기
+    if (text.length > 20) {
+      text = text.substring(0, 20) + '...';
+    }
+
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+
+    final fillPaint = Paint()..color = Colors.white;
+    final borderPaint = Paint()
+      ..color = const Color(0xFFfc17d2)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 4;
+
+    final path = Path();
+
+    // 공통적으로 사용될 좌표들 double로 변환
+    final double widthD = width.toDouble();
+    final double heightD = height.toDouble();
+    final double tailTop = (height - tailHeight).toDouble();
+    final double centerX = widthD / 2;
+
+    // ✅ 말풍선 본체 + 꼬리를 하나의 Path로 연결
+    path.moveTo(radius, 0);
+    path.lineTo(widthD - radius, 0);
+    path.quadraticBezierTo(widthD, 0, widthD, radius);
+    path.lineTo(widthD, tailTop - radius);
+    path.quadraticBezierTo(widthD, tailTop, widthD - radius, tailTop);
+    path.lineTo(centerX + 12, tailTop);
+    path.lineTo(centerX, heightD); // 꼬리 아래 꼭짓점
+    path.lineTo(centerX - 12, tailTop);
+    path.lineTo(radius, tailTop);
+    path.quadraticBezierTo(0, tailTop, 0, tailTop - radius);
+    path.lineTo(0, radius);
+    path.quadraticBezierTo(0, 0, radius, 0);
+    path.close();
+
+    // 풍선 배경과 테두리 그리기
+    canvas.drawPath(path, fillPaint);
+    canvas.drawPath(path, borderPaint);
+
+    // 텍스트 중앙 정렬
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: text,
+        style: const TextStyle(
+          fontSize: 28,
+          color: Colors.black,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.center,
+    );
+
+    textPainter.layout(minWidth: 0, maxWidth: widthD - 40);
+    textPainter.paint(
+      canvas,
+      Offset(
+        (widthD - textPainter.width) / 2,
+        (tailTop - textPainter.height) / 2,
+      ),
+    );
+
+    final picture = recorder.endRecording();
+    final img = await picture.toImage(width, height);
+    final bytes = await img.toByteData(format: ui.ImageByteFormat.png);
+
+    return BitmapDescriptor.fromBytes(bytes!.buffer.asUint8List());
+  }
+
+  Future<BitmapDescriptor> createOvalBalloonMarker(String text) async {
+    const int width = 320;
+    const int height = 130;
+    const int tailHeight = 15;
+    const double radiusX = 160; // 타원의 반지름 x
+    const double radiusY = 50;  // 타원의 반지름 y
+
+    if (text.length > 20) {
+      text = text.substring(0, 20) + '...';
+    }
+
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+    canvas.translate(0.5, 0.5); // 반픽셀 보정
+
+    final fillPaint = Paint()..color = Colors.white;
+    final borderPaint = Paint()
+      ..color = const Color(0xFFfc17d2)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.0;
+
+    final path = Path();
+    final double centerX = width / 2;
+    final double centerY = radiusY + 10;
+
+    // ✅ 타원 윗부분부터 시계방향으로 시작
+    path.moveTo(centerX - radiusX, centerY); // 좌측 시작점
+
+    // 타원 윗쪽 호
+    path.arcToPoint(
+      Offset(centerX + radiusX, centerY),
+      radius: const Radius.elliptical(radiusX, radiusY),
+      clockwise: true,
+    );
+
+    // 타원 아랫부분에서 꼬리로 이어지는 곡선
+    path.arcToPoint(
+      Offset(centerX + 12, centerY + radiusY),
+      radius: const Radius.elliptical(radiusX, radiusY),
+      clockwise: true,
+    );
+
+    // 꼬리 삼각형
+    path.lineTo(centerX, height.toDouble());
+    path.lineTo(centerX - 12, centerY + radiusY);
+
+    // 타원 아래쪽 나머지 곡선
+    path.arcToPoint(
+      Offset(centerX - radiusX, centerY),
+      radius: const Radius.elliptical(radiusX, radiusY),
+      clockwise: true,
+    );
+
+    path.close();
+
+    // ✅ 그리기
+    canvas.drawPath(path, fillPaint);
+    canvas.drawPath(path, borderPaint);
+
+    // ✅ 텍스트
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: text,
+        style: const TextStyle(
+          fontSize: 28,
+          color: Colors.black,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.center,
+    );
+
+    textPainter.layout(maxWidth: width - 40);
+    textPainter.paint(
+      canvas,
+      Offset((width - textPainter.width) / 2, centerY - textPainter.height / 2),
+    );
+
+    final picture = recorder.endRecording();
+    final img = await picture.toImage(width, height);
+    final bytes = await img.toByteData(format: ui.ImageByteFormat.png);
+    return BitmapDescriptor.fromBytes(bytes!.buffer.asUint8List());
+  }
+
+  Future<BitmapDescriptor> createPillBalloonMarker(String text) async {
+    const int originalWidth = 420;
+    const int originalHeight = 130;
+    const int tailHeight = 15;
+    const int extraMargin = 10; // ← 캔버스 여백
+    const int canvasWidth = originalWidth + extraMargin * 2;
+    const int canvasHeight = originalHeight + extraMargin;
+
+    if (text.length > 25) {
+      text = text.substring(0, 25) + '...';
+    }
+
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+    canvas.translate(0.5, 0.5); // 픽셀 보정
+
+    final fillPaint = Paint()..color = Colors.white;
+    final borderPaint = Paint()
+      ..color = const Color(0xFFfc17d2)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.0;
+
+    final double widthD = originalWidth.toDouble();
+    final double heightD = originalHeight.toDouble();
+    final double centerX = canvasWidth / 2;
+    final double topY = extraMargin.toDouble();
+    final double pillHeight = heightD - tailHeight;
+    final double radius = pillHeight / 2;
+
+    final path = Path();
+    final left = extraMargin.toDouble();
+    final right = left + widthD;
+
+    // ✅ path 시작점부터 pill + 꼬리까지
+    path.moveTo(left + radius, topY);
+    path.lineTo(right - radius, topY);
+    path.arcToPoint(Offset(right, topY + radius), radius: Radius.circular(radius));
+    path.lineTo(right, topY + pillHeight - radius);
+    path.arcToPoint(Offset(right - radius, topY + pillHeight), radius: Radius.circular(radius));
+    path.lineTo(centerX + 10, topY + pillHeight);
+    path.lineTo(centerX, topY + pillHeight + tailHeight); // 꼬리
+    path.lineTo(centerX - 10, topY + pillHeight);
+    path.lineTo(left + radius, topY + pillHeight);
+    path.arcToPoint(Offset(left, topY + pillHeight - radius), radius: Radius.circular(radius));
+    path.lineTo(left, topY + radius);
+    path.arcToPoint(Offset(left + radius, topY), radius: Radius.circular(radius));
+    path.close();
+
+    canvas.drawPath(path, fillPaint);
+    canvas.drawPath(path, borderPaint);
+
+    // 텍스트 중앙 정렬
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: text,
+        style: const TextStyle(
+          fontSize: 34,
+          color: Colors.black,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.center,
+    );
+
+    textPainter.layout(maxWidth: widthD - 40);
+    textPainter.paint(
+      canvas,
+      Offset(
+        left + (widthD - textPainter.width) / 2,
+        topY + (pillHeight - textPainter.height) / 2,
+      ),
+    );
+
+    final picture = recorder.endRecording();
+    final img = await picture.toImage(canvasWidth, canvasHeight);
+    final bytes = await img.toByteData(format: ui.ImageByteFormat.png);
+
+    return BitmapDescriptor.fromBytes(bytes!.buffer.asUint8List());
+  }
+
+
 
   Future<Position> _getCurrentPosition() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
