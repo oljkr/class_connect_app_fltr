@@ -153,8 +153,8 @@ class _NearbyMapScreenState extends State<NearbyMapScreen> {
 
     // 3. 그림자 페인트
     final shadowPaint = Paint()
-      ..color = const Color(0xFFfc17d2).withOpacity(1.0) // ← 여기 적용
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6); // 퍼짐 정도
+      ..color = Colors.deepOrange.withOpacity(1.0)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
 
     // 4. 배경 박스 그림자
     const double shadowOffsetX = 10;
