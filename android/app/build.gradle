@@ -25,12 +25,16 @@ if (flutterVersionName == null) {
 
 android {
     namespace = "com.sososi.class_connect_app_fltr"
-    compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    compileSdkVersion 35
+    ndkVersion "26.1.10909125"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = "1.8"
     }
 
     defaultConfig {
@@ -38,8 +42,8 @@ android {
         applicationId = "com.sososi.class_connect_app_fltr"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
-        minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+        minSdkVersion 23
+        targetSdkVersion 35
         versionCode = flutterVersionCode.toInteger()
         versionName = flutterVersionName
     }
@@ -55,4 +59,9 @@ android {
 
 flutter {
     source = "../.."
+}
+
+// ✅ Kotlin BOM 강제 적용 (호환성 문제 해결용)
+dependencies {
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.9.22"))
 }

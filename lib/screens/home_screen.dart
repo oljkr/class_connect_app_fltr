@@ -3,6 +3,7 @@ import 'class_applications_webview.dart';
 import 'home_webview.dart';
 import 'logout_screen.dart';
 import 'mypage_webview.dart';
+import 'nearby_map_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key, this.isFirstRun = false, this.initialIndex = 0});
@@ -24,7 +25,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildBody() {
     if (_selectedIndex == 0) return const HomeWebView();
-    if (_selectedIndex == 1) return const LogoutScreen();
+    // if (_selectedIndex == 1) return const LogoutScreen();
+    if (_selectedIndex == 1) return const NearbyMapScreen();
     if (_selectedIndex == 2) return const Center(child: Text('별조각'));
     if (_selectedIndex == 3) return const MyPageWebView();
     return const Center(child: Text('Unknown'));
