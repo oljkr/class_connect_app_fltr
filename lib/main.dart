@@ -10,17 +10,6 @@ Future<void> main() async {
   // .env 파일 로드
   await dotenv.load(fileName: ".env");
   await SupabaseService().initialize();
-  // await NaverMapSdk.instance.initialize(clientId: 'vmavd57geq');
-  await FlutterNaverMap().init(
-      clientId: 'vmavd57geq',
-      onAuthFailed: (ex) => switch (ex) {
-        NQuotaExceededException(:final message) =>
-            print("사용량 초과 (message: $message)"),
-        NUnauthorizedClientException() ||
-        NClientUnspecifiedException() ||
-        NAnotherAuthFailedException() =>
-            print("인증 실패: $ex"),
-      });
 
   runApp(const MyApp());
 }
