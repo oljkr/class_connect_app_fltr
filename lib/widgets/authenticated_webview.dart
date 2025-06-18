@@ -41,56 +41,21 @@ class _AuthenticatedWebViewState extends State<AuthenticatedWebView> {
     print('🟢 accessToken: $accessToken');
     print('🟢 refreshToken: $refreshToken');
 
-    if (session == null) {
-      debugPrint("❗ Supabase 세션이 존재하지 않습니다.");
-      return;
+    if (session != null) {
+      // 세션이 있을 경우에만 쿠키 설정
+      await cookieManager.setCookies([
+        Cookie('supabase.auth.token', Uri.encodeComponent(jsonEncode({
+          'access_token': accessToken,
+          'refresh_token': refreshToken,
+        })))
+          ..domain = 'www.sososi.com'
+          ..path = '/'
+          ..expires = DateTime.now().add(Duration(days: 10))
+          ..httpOnly = false,
+      ]);
+    } else {
+      debugPrint("⚠️ Supabase 세션이 없음 → 쿠키 설정 생략");
     }
-
-    final sessionJson = jsonEncode(session.toJson());
-
-    // 👉 쿠키 설정
-    // await cookieManager.setCookies([
-    //   WebViewCookie(
-    //     name: 'supabase-session',
-    //     value: Uri.encodeComponent(sessionJson),
-    //     domain: 'www.sososi.com',
-    //     path: '/',
-    //     // isHttpOnly: true, // JS에서 접근 못 하게 하려면 주석 해제
-    //   ),
-    // ]);
-
-    // await cookieManager.setCookies([
-    //   Cookie('supabase-session', Uri.encodeComponent(sessionJson))
-    //     ..domain = 'www.sososi.com'
-    //     ..expires = DateTime.now().add(Duration(days: 10))
-    //     ..httpOnly = false
-    // ]);
-
-    // await cookieManager.setCookies([
-    //   Cookie('sb-vismpynytzpoaspqrcvn-auth-token.0', session.accessToken)
-    //     ..domain = 'www.sososi.com'
-    //     ..expires = DateTime.now().add(Duration(days: 10))
-    //     ..path = '/'
-    //     ..httpOnly = false,
-    //
-    //   Cookie('sb-vismpynytzpoaspqrcvn-auth-token.1', session.refreshToken ?? '')
-    //     ..domain = 'www.sososi.com'
-    //     ..expires = DateTime.now().add(Duration(days: 30))
-    //     ..path = '/'
-    //     ..httpOnly = false,
-    // ]);
-
-    await cookieManager.setCookies([
-      Cookie('supabase.auth.token', Uri.encodeComponent(jsonEncode({
-        'access_token': accessToken,
-        'refresh_token': refreshToken,
-      })))
-        ..domain = 'www.sososi.com'
-        ..path = '/'
-        ..expires = DateTime.now().add(Duration(days: 10))
-        ..httpOnly = false,
-    ]);
-
 
     // 플랫폼별 설정
     late final PlatformWebViewControllerCreationParams params;

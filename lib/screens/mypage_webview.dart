@@ -15,15 +15,15 @@ class _MyPageWebViewState extends State<MyPageWebView> {
   void initState() {
     super.initState();
 
-    final session = Supabase.instance.client.auth.currentSession;
-    if (session == null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => LoginScreen()),
-        );
-      });
-    }
+    // final session = Supabase.instance.client.auth.currentSession;
+    // if (session == null) {
+    //   WidgetsBinding.instance.addPostFrameCallback((_) {
+    //     Navigator.pushReplacement(
+    //       context,
+    //       MaterialPageRoute(builder: (_) => LoginScreen()),
+    //     );
+    //   });
+    // }
   }
 
   static const String _mypageUrl = 'https://www.sososi.com/mypage';
