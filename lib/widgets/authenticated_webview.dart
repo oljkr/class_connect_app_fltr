@@ -10,6 +10,7 @@ import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 import 'package:webview_cookie_manager/webview_cookie_manager.dart';
 
 import '../screens/home_screen.dart';
+import '../screens/login_screen.dart';
 import '../screens/settings_screen.dart';
 
 class AuthenticatedWebView extends StatefulWidget {
@@ -86,6 +87,16 @@ class _AuthenticatedWebViewState extends State<AuthenticatedWebView> {
             MaterialPageRoute(builder: (_) => const SettingsScreen()),
           );
           return NavigationDecision.prevent; // 웹뷰에선 열지 않도록
+        }
+
+        if (url == 'sososi://login') {
+          debugPrint("📲 딥링크 로그인 감지됨 → 로그인 페이지로 이동");
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => LoginScreen()),
+          );
+          return NavigationDecision.prevent;
         }
 
         if (url == 'sososi://logout') {

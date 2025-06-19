@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'class_applications_webview.dart';
 import 'home_webview.dart';
+import 'liked_webview.dart';
 import 'mypage_webview.dart';
 import 'nearby_map_screen.dart';
 
@@ -49,7 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
       case 1:
         return const NearbyMapScreen();
       case 2:
-        return const Center(child: Text('찜'));
+        return const LikedWebView();
       case 3:
         return const Center(child: Text('예약'));
       case 4:
