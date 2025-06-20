@@ -9,6 +9,7 @@ import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 import 'package:webview_cookie_manager/webview_cookie_manager.dart';
 
+import '../screens/class_detail_webview.dart';
 import '../screens/home_screen.dart';
 import '../screens/login_screen.dart';
 import '../screens/settings_screen.dart';
@@ -116,11 +117,43 @@ class _AuthenticatedWebViewState extends State<AuthenticatedWebView> {
           return NavigationDecision.prevent;
         }
 
+        if (url.startsWith('sososi://class-detail/')) {
+          final classNo = int.tryParse(url.split('/').last); // ex: 14
+          if (classNo != null) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => ClassDetailWebView(classNo: classNo)),
+            );
+          }
+          return NavigationDecision.prevent;
+        }
+
+        if (url == 'sososi://goBack') {
+          Navigator.of(context).maybePop(); // 혹은 원하는 페이지로 이동
+          return NavigationDecision.prevent;
+        }
+
         return NavigationDecision.navigate;
       },
-      onPageFinished: (url) {
-        log("✅ 페이지 로딩 완료: $url");
-      },
+        onPageFinished: (url) async {
+          log("✅ 페이지 로딩 완료: $url");
+
+          await Future.delayed(Duration(milliseconds: 300));
+          await _controller.runJavaScript("""
+    (function() {
+      const event = new MouseEvent('click', {
+        bubbles: true,
+        cancelable: true,
+        view: window
+      });
+      document.body.dispatchEvent(event);
+      window.scrollTo(0, 1);
+      window.scrollTo(0, 0);
+      document.body.focus();
+      window.dispatchEvent(new Event('resize'));
+    })();
+  """);
+        },
     ));
 
     // Android 쿠키 허용
