@@ -19,6 +19,7 @@ class _NearbyMapScreenState extends State<NearbyMapScreen> {
   final Set<Marker> _markers = {};
   late GoogleMapController _mapController;
   LatLng? _currentMapCenter;
+  List<Map<String, dynamic>> _nearbyLocations = [];
 
   @override
   void initState() {
@@ -53,13 +54,25 @@ class _NearbyMapScreenState extends State<NearbyMapScreen> {
         return latVal != null && lngVal != null && latVal != 0 && lngVal != 0;
       }).toList();
 
-      final nearby = filteredLocations.where((loc) {
+      // final nearby = filteredLocations.where((loc) {
+      //   final locLat = (loc['lat'] as num).toDouble();
+      //   final locLng = (loc['lng'] as num).toDouble();
+      //   final dist = _calculateDistance(lat, lng, locLat, locLng);
+      //   print('거리: ${loc['title']} → ${dist.toStringAsFixed(2)} km');
+      //   return dist <= 2.0;
+      // }).toList();
+
+      final nearby = filteredLocations.map((loc) {
         final locLat = (loc['lat'] as num).toDouble();
         final locLng = (loc['lng'] as num).toDouble();
         final dist = _calculateDistance(lat, lng, locLat, locLng);
-        print('거리: ${loc['title']} → ${dist.toStringAsFixed(2)} km');
-        return dist <= 2.0;
-      }).toList();
+
+        return {
+          ...loc,
+          'distance': dist,
+        };
+      }).where((loc) => loc['distance'] <= 2.0).toList();
+
 
       final Set<Marker> newMarkers = {};
 
@@ -83,6 +96,7 @@ class _NearbyMapScreenState extends State<NearbyMapScreen> {
       }
 
       setState(() {
+        _nearbyLocations = nearby;
         _markers.clear();
         _markers.addAll(newMarkers);
       });
@@ -478,10 +492,17 @@ class _NearbyMapScreenState extends State<NearbyMapScreen> {
   }
 
   Future<List<Map<String, dynamic>>> _fetchAllLocations() async {
+    // final res = await Supabase.instance.client
+    //     .from('classes')
+    //     .select('*');
+    // return List<Map<String, dynamic>>.from(res);
     final res = await Supabase.instance.client
         .from('classes')
-        .select('*');
-    return List<Map<String, dynamic>>.from(res);
+        .select('*, class_images(*)')
+        .order('class_no'); // 정렬은 메인 테이블 기준
+
+    return (res as List<dynamic>).map((e) => Map<String, dynamic>.from(e)).toList();
+
   }
 
   double _calculateDistance(double lat1, double lon1, double lat2, double lon2) {
@@ -517,17 +538,92 @@ class _NearbyMapScreenState extends State<NearbyMapScreen> {
       appBar: AppBar(title: const Text("내 주변 위치")),
       body: _userPosition == null
           ? const Center(child: CircularProgressIndicator())
-          : GoogleMap(
-        onMapCreated: _onMapCreated,
-        onCameraMove: _onCameraMove,
-        onCameraIdle: _onCameraIdle,
-        initialCameraPosition: CameraPosition(
-          target: _userPosition!,
-          zoom: 16,
-        ),
-        markers: _markers,
-        myLocationEnabled: true,
-        myLocationButtonEnabled: true,
+          : Stack(
+        children: [
+          // 구글 지도
+          GoogleMap(
+            onMapCreated: _onMapCreated,
+            onCameraMove: _onCameraMove,
+            onCameraIdle: _onCameraIdle,
+            initialCameraPosition: CameraPosition(
+              target: _userPosition!,
+              zoom: 16,
+            ),
+            markers: _markers,
+            myLocationEnabled: true,
+            myLocationButtonEnabled: true,
+          ),
+
+          // 지도 위에 올라가는 리스트 (DraggableScrollableSheet)
+          DraggableScrollableSheet(
+            initialChildSize: 0.2, // 시작 높이 비율
+            minChildSize: 0.1,     // 최소 높이 비율
+            maxChildSize: 1.0,     // 최대 높이 비율
+            builder: (context, scrollController) {
+              return Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                  boxShadow: [
+                    BoxShadow(color: Colors.black12, blurRadius: 8),
+                  ],
+                ),
+                child: ListView.builder(
+                  controller: scrollController,
+                  itemCount: _nearbyLocations.length,
+                  itemBuilder: (context, index) {
+                    final item = _nearbyLocations[index];
+                    final images = item['class_images'] as List<dynamic>?;
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // ⬇️ 이미지 가로 스크롤
+                        if (images != null && images.isNotEmpty)
+                          SizedBox(
+                            height: 160,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: images.length,
+                              itemBuilder: (context, imgIndex) {
+                                final imgUrl = images[imgIndex]['image_url'];
+                                return Padding(
+                                  padding: const EdgeInsets.only(right: 2.0),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: Image.network(
+                                      imgUrl,
+                                      width: 120,
+                                      height: 160,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+
+                        // ⬇️ 클래스 텍스트 정보
+                        ListTile(
+                          title: Text(item['title'] ?? '클래스 제목 없음'),
+                          subtitle: Text('거리: ${item['distance']?.toStringAsFixed(2)}km'),
+                          onTap: () {
+                            final lat = (item['lat'] as num).toDouble();
+                            final lng = (item['lng'] as num).toDouble();
+                            _mapController.animateCamera(
+                              CameraUpdate.newLatLng(LatLng(lat, lng)),
+                            );
+                          },
+                        ),
+                        const Divider(),
+                      ],
+                    );
+                  },
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
