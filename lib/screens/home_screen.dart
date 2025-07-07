@@ -5,6 +5,7 @@ import 'home_webview.dart';
 import 'liked_webview.dart';
 import 'mypage_webview.dart';
 import 'nearby_map_screen.dart';
+import 'reservations_webview.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key, this.isFirstRun = false, this.initialIndex = 0});
@@ -52,7 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
       case 2:
         return const LikedWebView();
       case 3:
-        return const Center(child: Text('예약'));
+        return const ReservationsWebView();
       case 4:
         return const MyPageWebView();
       default:

@@ -10,6 +10,7 @@ import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 import 'package:webview_cookie_manager/webview_cookie_manager.dart';
 
 import '../screens/class_detail_webview.dart';
+import '../screens/generic_webview.dart';
 import '../screens/home_screen.dart';
 import '../screens/login_screen.dart';
 import '../screens/settings_screen.dart';
@@ -130,6 +131,22 @@ class _AuthenticatedWebViewState extends State<AuthenticatedWebView> {
 
         if (url == 'sososi://goBack') {
           Navigator.of(context).maybePop(); // 혹은 원하는 페이지로 이동
+          return NavigationDecision.prevent;
+        }
+
+        if (url == 'sososi://withdraw') {
+          debugPrint("📲 딥링크 회원 탈퇴 감지됨 → 회원 탈퇴 안내 페이지로 이동");
+
+          await Supabase.instance.client.auth.signOut();
+
+          if (!mounted) return NavigationDecision.prevent;
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const GenericWebView(url: 'https://www.sososi.com/withdraw/success'),
+            ),
+          );
           return NavigationDecision.prevent;
         }
 
