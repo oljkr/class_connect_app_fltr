@@ -20,13 +20,24 @@ class _NearbyMapScreenState extends State<NearbyMapScreen> {
   late GoogleMapController _mapController;
   LatLng? _currentMapCenter;
   List<Map<String, dynamic>> _nearbyLocations = [];
+  List<Map<String, dynamic>> _originalLocations = [];
+  bool _isFiltered = false; // 🔑 필터 상태 여부
+  final DraggableScrollableController _draggableController = DraggableScrollableController();
+  double _lastScrollSize = 0.2; // 사용자가 마지막으로 내려둔 비율
 
   @override
   void initState() {
     super.initState();
+
+    _draggableController.addListener(() {
+      _lastScrollSize = _draggableController.size;
+      print('📌 저장된 스크롤 비율: $_lastScrollSize');
+    });
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       initMap();
     });
+
   }
 
   Future<void> initMap() async {
@@ -96,10 +107,17 @@ class _NearbyMapScreenState extends State<NearbyMapScreen> {
       }
 
       setState(() {
-        _nearbyLocations = nearby;
+        _originalLocations = nearby;
+
+        // ✅ 필터 상태가 아닐 때만 전체 목록 덮어쓰기
+        if (!_isFiltered) {
+          _nearbyLocations = nearby;
+        }
+
         _markers.clear();
         _markers.addAll(newMarkers);
       });
+
 
       print('✅ 마커 로드 완료: ${_markers.length}개');
     } catch (e) {
@@ -534,97 +552,243 @@ class _NearbyMapScreenState extends State<NearbyMapScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("내 주변 위치")),
-      body: _userPosition == null
-          ? const Center(child: CircularProgressIndicator())
-          : Stack(
-        children: [
-          // 구글 지도
-          GoogleMap(
-            onMapCreated: _onMapCreated,
-            onCameraMove: _onCameraMove,
-            onCameraIdle: _onCameraIdle,
-            initialCameraPosition: CameraPosition(
-              target: _userPosition!,
-              zoom: 16,
+    return WillPopScope(
+      onWillPop: () async {
+        if (_isFiltered) {
+          setState(() {
+            _isFiltered = false;
+            _nearbyLocations = List.from(_originalLocations);
+          });
+          return false;
+        }
+        return true;
+      },
+      child: Scaffold(
+        appBar: AppBar(title: const Text("내 주변 위치")),
+        body: _userPosition == null
+            ? const Center(child: CircularProgressIndicator())
+            : Stack(
+          children: [
+            // ⬇️ 구글 지도
+            GoogleMap(
+              onMapCreated: _onMapCreated,
+              onCameraMove: _onCameraMove,
+              onCameraIdle: _onCameraIdle,
+              initialCameraPosition: CameraPosition(
+                target: _userPosition!,
+                zoom: 16,
+              ),
+              markers: _markers,
+              myLocationEnabled: true,
+              myLocationButtonEnabled: true,
             ),
-            markers: _markers,
-            myLocationEnabled: true,
-            myLocationButtonEnabled: true,
-          ),
 
-          // 지도 위에 올라가는 리스트 (DraggableScrollableSheet)
-          DraggableScrollableSheet(
-            initialChildSize: 0.2, // 시작 높이 비율
-            minChildSize: 0.1,     // 최소 높이 비율
-            maxChildSize: 1.0,     // 최대 높이 비율
-            builder: (context, scrollController) {
-              return Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                  boxShadow: [
-                    BoxShadow(color: Colors.black12, blurRadius: 8),
-                  ],
-                ),
+            // ✅ 필터 상태에 따라 다른 위젯 표시
+            if (_isFiltered)
+            // 단일 클래스 카드 (고정 위치)
+              Positioned(
+                bottom: 20,
+                left: 16,
+                right: 16,
+                child: _buildSingleClassCard(_nearbyLocations.first),
+              )
+            else
+            // 전체 목록 (DraggableScrollableSheet)
+              DraggableScrollableSheet(
+                controller: _draggableController,
+                initialChildSize: _lastScrollSize,
+                minChildSize: 0.1,
+                maxChildSize: 1.0,
+                builder: (context, scrollController) {
+                  _draggableController!.addListener(() {
+                    _lastScrollSize = _draggableController!.size;
+                    print('📌 저장된 스크롤 비율: $_lastScrollSize');
+                  });
+
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                      boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8)],
+                    ),
+                    child: _buildListContent(scrollController),
+                  );
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+// ✅ 단일 클래스 카드 위젯
+  Widget _buildSingleClassCard(Map<String, dynamic> item) {
+    final images = item['class_images'] as List<dynamic>?;
+
+    return Material(
+      elevation: 8,
+      borderRadius: BorderRadius.circular(16),
+      color: Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (images != null && images.isNotEmpty)
+              SizedBox(
+                height: 120,
                 child: ListView.builder(
-                  controller: scrollController,
-                  itemCount: _nearbyLocations.length,
-                  itemBuilder: (context, index) {
-                    final item = _nearbyLocations[index];
-                    final images = item['class_images'] as List<dynamic>?;
-
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // ⬇️ 이미지 가로 스크롤
-                        if (images != null && images.isNotEmpty)
-                          SizedBox(
-                            height: 160,
-                            child: ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: images.length,
-                              itemBuilder: (context, imgIndex) {
-                                final imgUrl = images[imgIndex]['image_url'];
-                                return Padding(
-                                  padding: const EdgeInsets.only(right: 2.0),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(10),
-                                    child: Image.network(
-                                      imgUrl,
-                                      width: 120,
-                                      height: 160,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-
-                        // ⬇️ 클래스 텍스트 정보
-                        ListTile(
-                          title: Text(item['title'] ?? '클래스 제목 없음'),
-                          subtitle: Text('거리: ${item['distance']?.toStringAsFixed(2)}km'),
-                          onTap: () {
-                            final lat = (item['lat'] as num).toDouble();
-                            final lng = (item['lng'] as num).toDouble();
-                            _mapController.animateCamera(
-                              CameraUpdate.newLatLng(LatLng(lat, lng)),
-                            );
-                          },
+                  scrollDirection: Axis.horizontal,
+                  itemCount: images.length,
+                  itemBuilder: (context, imgIndex) {
+                    final imgUrl = images[imgIndex]['image_url'];
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Image.network(
+                          imgUrl,
+                          width: 100,
+                          height: 120,
+                          fit: BoxFit.cover,
                         ),
-                        const Divider(),
-                      ],
+                      ),
                     );
                   },
                 ),
-              );
-            },
+              ),
+            const SizedBox(height: 12),
+            Text(
+              item['title'] ?? '클래스 제목 없음',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '거리: ${item['distance']?.toStringAsFixed(2)}km',
+              style: TextStyle(color: Colors.grey[600]),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+// ✅ 필터된 상태의 컨텐츠 (단일 카드)
+  Widget _buildFilteredContent() {
+    final item = _nearbyLocations.first;
+    final images = item['class_images'] as List<dynamic>?;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // 드래그 핸들
+          Container(
+            width: 40,
+            height: 4,
+            margin: const EdgeInsets.only(bottom: 16),
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(2),
+            ),
           ),
+
+          if (images != null && images.isNotEmpty)
+            SizedBox(
+              height: 120,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: images.length,
+                itemBuilder: (context, imgIndex) {
+                  final imgUrl = images[imgIndex]['image_url'];
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 4),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.network(
+                        imgUrl,
+                        width: 100,
+                        height: 120,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          const SizedBox(height: 8),
+          Text(
+            item['title'] ?? '클래스 제목 없음',
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          Text('거리: ${item['distance']?.toStringAsFixed(2)}km'),
         ],
       ),
     );
   }
+
+// ✅ 전체 리스트 컨텐츠
+  Widget _buildListContent(ScrollController scrollController) {
+    return ListView.builder(
+      controller: scrollController,
+      itemCount: _nearbyLocations.length,
+      itemBuilder: (context, index) {
+        final item = _nearbyLocations[index];
+        final images = item['class_images'] as List<dynamic>?;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (images != null && images.isNotEmpty)
+              SizedBox(
+                height: 160,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: images.length,
+                  itemBuilder: (context, imgIndex) {
+                    final imgUrl = images[imgIndex]['image_url'];
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 2.0),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Image.network(
+                          imgUrl,
+                          width: 120,
+                          height: 160,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ListTile(
+              title: Text(item['title'] ?? '클래스 제목 없음'),
+              subtitle: Text('거리: ${item['distance']?.toStringAsFixed(2)}km'),
+              onTap: () {
+                final lat = (item['lat'] as num).toDouble();
+                final lng = (item['lng'] as num).toDouble();
+
+                _mapController.animateCamera(
+                  CameraUpdate.newLatLng(LatLng(lat, lng)),
+                );
+
+                setState(() {
+                  _isFiltered = true;
+                  _nearbyLocations = [item];
+                });
+              },
+            ),
+            const Divider(),
+          ],
+        );
+      },
+    );
+  }
+
 }
