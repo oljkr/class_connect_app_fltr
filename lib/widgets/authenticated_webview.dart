@@ -14,6 +14,7 @@ import '../screens/generic_webview.dart';
 import '../screens/home_screen.dart';
 import '../screens/login_screen.dart';
 import '../screens/settings_screen.dart';
+import '../screens/write_review_screen.dart';
 
 class AuthenticatedWebView extends StatefulWidget {
   final String url;
@@ -82,6 +83,7 @@ class _AuthenticatedWebViewState extends State<AuthenticatedWebView> {
     _controller.setNavigationDelegate(NavigationDelegate(
       onNavigationRequest: (request) async {
         final url = request.url;
+        final uri = Uri.parse(request.url);
 
         if (url == 'sososi://go-to-native-settings') {
           Navigator.push(
@@ -149,6 +151,46 @@ class _AuthenticatedWebViewState extends State<AuthenticatedWebView> {
           );
           return NavigationDecision.prevent;
         }
+
+        if (uri.scheme == 'sososi' && uri.host == 'write-review') {
+          final classNoStr = uri.queryParameters['classNo'];
+          final reservationNoStr = uri.queryParameters['reservationNo'];
+
+          final classNo = int.tryParse(classNoStr ?? '');
+          final reservationNo = int.tryParse(reservationNoStr ?? '');
+
+          if (classNo != null && reservationNo != null) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => WriteReviewScreen(
+                  classNo: classNo,
+                  reservationNo: reservationNo,
+                ),
+              ),
+            );
+          }
+          return NavigationDecision.prevent;
+        }
+
+        // if (url.startsWith('sososi://write-review')) {
+        //   final uri = Uri.parse(url);
+        //
+        //   // Path 방식 예: sososi://write-review/14
+        //   final segments = uri.pathSegments;
+        //   if (segments.isNotEmpty) {
+        //     final classNo = int.tryParse(segments[0]);
+        //     if (classNo != null) {
+        //       Navigator.push(
+        //         context,
+        //         MaterialPageRoute(builder: (_) => WriteReviewScreen(classNo: classNo)),
+        //       );
+        //     }
+        //   }
+        //
+        //   // 쿼리 방식 예: sososi://write-review?classNo=14
+        //   // final classNo = int.tryParse(uri.queryParameters['classNo'] ?? '');
+        // }
 
         return NavigationDecision.navigate;
       },
