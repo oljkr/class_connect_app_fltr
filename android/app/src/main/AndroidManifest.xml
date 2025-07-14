@@ -3,9 +3,10 @@
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
-        android:label="class_connect_app_fltr"
+        android:label="소소시"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
 
@@ -48,6 +49,11 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
+        <!-- 기본 알림 채널 설정 여기서 android:value="high_importance_channel"은 이전에 설정한 AndroidNotificationChannel의 ID와 일치해야 합니다.-->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="high_importance_channel"/>
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
