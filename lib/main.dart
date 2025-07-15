@@ -146,7 +146,10 @@ Future<void> main() async {
   });
 
 
-  runApp(const MyApp());
+  runApp(MaterialApp(
+    debugShowCheckedModeBanner: false,
+    home: HomeScreen(isFirstRun: isFirstRun), // 웹뷰가 들어간 HomeScreen을 시작 화면으로 지정
+  ));
 
   // 앱이 백그라운드 상태에서(그러니까 실행은 한 상태) 푸시 알림을 클릭해 열릴 때 호출됩니다.
   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
@@ -184,14 +187,14 @@ Future<void> main() async {
 
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: HomeScreen(), // 웹뷰가 들어간 HomeScreen을 시작 화면으로 지정
-    );
-  }
-}
+// class MyApp extends StatelessWidget {
+//   const MyApp({super.key});
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return const MaterialApp(
+//       debugShowCheckedModeBanner: false,
+//       home: HomeScreen(isFirstRun: isFirstRun), // 웹뷰가 들어간 HomeScreen을 시작 화면으로 지정
+//     );
+//   }
+// }

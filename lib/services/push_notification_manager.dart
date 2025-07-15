@@ -27,7 +27,7 @@ class PushNotificationManager {
   Future<void> initializePushNotifications() async {
     // FCM 토큰 가져오기
     String? fcmToken = await FirebaseMessaging.instance.getToken();
-    String appCode = 'kr.wishtarot.wishtarotapp';
+    String appCode = 'com.sososi.class_connect_app_fltr';
 
     print('FCM token: $fcmToken');
 
@@ -111,7 +111,7 @@ class PushNotificationManager {
     try {
       // FCM 토큰 가져오기
       String? fcmToken = _prefs.getString('fcm_token');
-      String appCode = 'kr.wishtarot.wishtarotapp';
+      String appCode = 'com.sososi.class_connect_app_fltr';
 
       print('FCM token: $fcmToken');
 
@@ -127,7 +127,7 @@ class PushNotificationManager {
     try {
       // FCM 토큰 가져오기
       String? fcmToken = _prefs.getString('fcm_token');
-      String appCode = 'kr.wishtarot.wishtarotapp';
+      String appCode = 'com.sososi.class_connect_app_fltr';
 
       print('FCM token: $fcmToken');
 
@@ -143,7 +143,7 @@ class PushNotificationManager {
     try {
       // FCM 토큰 가져오기
       String? fcmToken = _prefs.getString('fcm_token');
-      String appCode = 'kr.wishtarot.wishtarotapp';
+      String appCode = 'com.sososi.class_connect_app_fltr';
 
       print('FCM token: $fcmToken');
 
@@ -159,7 +159,7 @@ class PushNotificationManager {
     try {
       // FCM 토큰 가져오기
       String? fcmToken = _prefs.getString('fcm_token');
-      String appCode = 'kr.wishtarot.wishtarotapp';
+      String appCode = 'com.sososi.class_connect_app_fltr';
 
       print('FCM token: $fcmToken');
 
@@ -177,7 +177,7 @@ class PushNotificationManager {
     try {
       // FCM 토큰 가져오기
       String? fcmToken = _prefs.getString('fcm_token');
-      String appCode = 'kr.wishtarot.wishtarotapp';
+      String appCode = 'com.sososi.class_connect_app_fltr';
       String loginYn =
       _supabaseService.isUserLoggedIn() ? 'y' : 'n'; // 로그인 여부 확인
 
@@ -203,7 +203,7 @@ class PushNotificationManager {
   }) async {
     try {
       String? fcmToken = _prefs.getString('fcm_token');
-      String appCode = 'kr.wishtarot.wishtarotapp';
+      String appCode = 'com.sososi.class_connect_app_fltr';
       String loginYn = _prefs.getBool('isLoggedIn') == true ? 'y' : 'n';
 
       if (fcmToken != null) {

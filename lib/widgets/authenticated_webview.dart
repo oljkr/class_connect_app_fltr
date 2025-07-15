@@ -13,6 +13,7 @@ import '../screens/class_detail_webview.dart';
 import '../screens/generic_webview.dart';
 import '../screens/home_screen.dart';
 import '../screens/login_screen.dart';
+import '../screens/notification_settings_screen.dart';
 import '../screens/settings_screen.dart';
 import '../screens/write_review_screen.dart';
 
@@ -171,6 +172,14 @@ class _AuthenticatedWebViewState extends State<AuthenticatedWebView> {
             );
           }
           return NavigationDecision.prevent;
+        }
+
+        if (url == 'sososi://alarm-settings') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => NotificationSettingsScreen()),
+          );
+          return NavigationDecision.prevent; // 웹뷰에선 열지 않도록
         }
 
         // if (url.startsWith('sososi://write-review')) {

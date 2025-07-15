@@ -432,9 +432,9 @@ class _NearbyMapScreenState extends State<NearbyMapScreen> {
 
     final fillPaint = Paint()..color = Colors.white;
     final borderPaint = Paint()
-      ..color = const Color(0xFFfc17d2)
+      ..color = const Color(0xFFDDD6F5)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 3.0;
+      ..strokeWidth = 4.0;
 
     final double widthD = originalWidth.toDouble();
     final double heightD = originalHeight.toDouble();
