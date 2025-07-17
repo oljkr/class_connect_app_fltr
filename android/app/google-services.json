@@ -30,14 +30,6 @@
           }
         },
         {
-          "client_id": "224870115987-n99i142mi1s8scvofmfh4il695b7n2vm.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.sososi.class_connect_app_fltr",
-            "certificate_hash": "3b469d7cdb4b1e21876444df46b09137f6943a21"
-          }
-        },
-        {
           "client_id": "224870115987-uomm8aoph3vt823da16i2hajlboq9mpk.apps.googleusercontent.com",
           "client_type": 3
         }
