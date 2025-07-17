@@ -129,11 +129,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _nativeGoogleSignIn() async {
     try {
-      String? webClientId = dotenv.env['GOOGLE_WEB_CLIENT_ID'];
+      // String? webClientId = dotenv.env['GOOGLE_WEB_CLIENT_ID'];
+      //
+      // final GoogleSignIn googleSignIn = GoogleSignIn(
+      //   scopes: ['email', 'profile'],
+      //   serverClientId: webClientId,
+      // );
 
       final GoogleSignIn googleSignIn = GoogleSignIn(
         scopes: ['email', 'profile'],
-        serverClientId: webClientId,
       );
 
       final googleUser = await googleSignIn.signIn();
@@ -164,13 +168,15 @@ class _LoginScreenState extends State<LoginScreen> {
         print(session.accessToken);
         print(session.refreshToken);
         // Navigator.pushReplacementNamed(context, '/mypage');
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(
-            builder: (context) =>
-                HomeScreen(isFirstRun: false, initialIndex: 3),
-          ),
-              (Route<dynamic> route) => false, // 모든 이전 경로를 제거
-        );
+        // Navigator.of(context).pushAndRemoveUntil(
+        //   MaterialPageRoute(
+        //     builder: (context) =>
+        //         HomeScreen(isFirstRun: false, initialIndex: 3),
+        //   ),
+        //       (Route<dynamic> route) => false, // 모든 이전 경로를 제거
+        // );
+
+        Navigator.pop(context); // 이전 화면으로 복귀
       } else {
         print('Supabase sign-in failed.');
         setState(() {

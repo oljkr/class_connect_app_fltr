@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/push_notification_manager.dart';
+import '../services/update_checker.dart';
 import 'class_applications_webview.dart';
 import 'home_webview.dart';
 import 'liked_webview.dart';
@@ -52,6 +53,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    UpdateChecker.checkAndHandleUpdate(context);
     _selectedIndex = widget.initialIndex;
     WidgetsBinding.instance.addObserver(this);
     messaging = FirebaseMessaging.instance;
