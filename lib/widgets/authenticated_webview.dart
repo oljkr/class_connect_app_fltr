@@ -30,6 +30,7 @@ class _AuthenticatedWebViewState extends State<AuthenticatedWebView> {
   late final WebViewController _controller;
   final cookieManager = WebviewCookieManager();
   bool _isInitialized = false;
+  Key _webViewKey = UniqueKey();
 
   @override
   void initState() {
@@ -38,29 +39,29 @@ class _AuthenticatedWebViewState extends State<AuthenticatedWebView> {
   }
 
   Future<void> _initWebView() async {
-    final session = Supabase.instance.client.auth.currentSession;
-    print('_checkLoginStatus:: session: $session');
-    final accessToken = session?.accessToken;
-    final refreshToken = session?.refreshToken;
-
-    print('🟢 accessToken: $accessToken');
-    print('🟢 refreshToken: $refreshToken');
-
-    if (session != null) {
-      // 세션이 있을 경우에만 쿠키 설정
-      await cookieManager.setCookies([
-        Cookie('supabase.auth.token', Uri.encodeComponent(jsonEncode({
-          'access_token': accessToken,
-          'refresh_token': refreshToken,
-        })))
-          ..domain = 'www.sososi.com'
-          ..path = '/'
-          ..expires = DateTime.now().add(Duration(days: 10))
-          ..httpOnly = false,
-      ]);
-    } else {
-      debugPrint("⚠️ Supabase 세션이 없음 → 쿠키 설정 생략");
-    }
+    // final session = Supabase.instance.client.auth.currentSession;
+    // print('_checkLoginStatus:: session: $session');
+    // final accessToken = session?.accessToken;
+    // final refreshToken = session?.refreshToken;
+    //
+    // print('🟢 accessToken: $accessToken');
+    // print('🟢 refreshToken: $refreshToken');
+    //
+    // if (session != null) {
+    //   // 세션이 있을 경우에만 쿠키 설정
+    //   await cookieManager.setCookies([
+    //     Cookie('supabase.auth.token', Uri.encodeComponent(jsonEncode({
+    //       'access_token': accessToken,
+    //       'refresh_token': refreshToken,
+    //     })))
+    //       ..domain = 'www.sososi.com'
+    //       ..path = '/'
+    //       ..expires = DateTime.now().add(Duration(days: 10))
+    //       ..httpOnly = false,
+    //   ]);
+    // } else {
+    //   debugPrint("⚠️ Supabase 세션이 없음 → 쿠키 설정 생략");
+    // }
 
     // 플랫폼별 설정
     late final PlatformWebViewControllerCreationParams params;
@@ -97,10 +98,51 @@ class _AuthenticatedWebViewState extends State<AuthenticatedWebView> {
         if (url == 'sososi://login') {
           debugPrint("📲 딥링크 로그인 감지됨 → 로그인 페이지로 이동");
 
-          Navigator.push(
+          // Navigator.push(
+          //   context,
+          //   MaterialPageRoute(builder: (_) => LoginScreen()),
+          // );
+
+          // 로그인 화면을 띄우고 결과를 기다림
+          final result = await Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => LoginScreen()),
           );
+
+          // 로그인 성공 후 웹뷰 새로고침
+          if (result == 'login_success') {
+            final session = Supabase.instance.client.auth.currentSession;
+            print('_checkLoginStatus:: session: $session');
+            final accessToken = session?.accessToken;
+            final refreshToken = session?.refreshToken;
+
+            print('🟢 accessToken: $accessToken');
+            print('🟢 refreshToken: $refreshToken');
+
+            if (session != null) {
+              // 세션이 있을 경우에만 쿠키 설정
+              await cookieManager.setCookies([
+                Cookie('supabase.auth.token', Uri.encodeComponent(jsonEncode({
+                  'access_token': accessToken,
+                  'refresh_token': refreshToken,
+                })))
+                  ..domain = 'www.sososi.com'
+                  ..path = '/'
+                  ..expires = DateTime.now().add(Duration(days: 10))
+                  ..httpOnly = false,
+              ]);
+            } else {
+              debugPrint("⚠️ Supabase 세션이 없음 → 쿠키 설정 생략");
+            }
+
+
+            debugPrint("✅ 로그인 성공 → 웹뷰 새로고침");
+            Future.delayed(Duration(milliseconds: 200), () async {
+              await _controller.reload();
+              // await _controller.runJavaScript('location.reload();');
+            });
+          }
+
           return NavigationDecision.prevent;
         }
 
