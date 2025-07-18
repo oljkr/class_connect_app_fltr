@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:class_connect_app_fltr/screens/error_screen.dart';
+import 'package:class_connect_app_fltr/screens/generic_webview.dart';
 import 'package:class_connect_app_fltr/screens/home_screen.dart';
 import 'package:class_connect_app_fltr/services/push_notification_manager.dart';
 import 'package:class_connect_app_fltr/services/supabase_service.dart';
@@ -10,6 +12,8 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
@@ -148,6 +152,7 @@ Future<void> main() async {
 
   runApp(MaterialApp(
     debugShowCheckedModeBanner: false,
+    navigatorKey: navigatorKey, // Add this line
     home: HomeScreen(isFirstRun: isFirstRun), // 웹뷰가 들어간 HomeScreen을 시작 화면으로 지정
   ));
 
@@ -162,11 +167,31 @@ Future<void> main() async {
 
     // messageId를 String으로 변환
     String id = message.data['messageId']?.toString() ?? 'unknown';
+    String url = 'https://www.sososi.com/messages/$id';
 
     // 푸시 알림이 클릭되었을 때의 처리
     if (message.data['targetPage'] != null) {
       // 원하는 페이지로 이동
       String targetPage = message.data['targetPage'];
+
+      // 예시: Flutter의 Navigator를 이용하여 페이지 이동
+      if (targetPage == "messages") {
+        print('go to message page');
+        navigatorKey.currentState?.push(
+          MaterialPageRoute(
+            builder: (context) => GenericWebView(url: url),
+          ),
+        );
+      } else {
+        print('🚫 알 수 없는 targetPage: $targetPage');
+        navigatorKey.currentState?.push(
+          MaterialPageRoute(
+            builder: (context) => ErrorScreen(
+              message: '알 수 없는 페이지 요청입니다: $targetPage',
+            ),
+          ),
+        );
+      }
     }
   });
 
