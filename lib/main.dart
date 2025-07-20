@@ -65,6 +65,19 @@ Future<void> main() async {
       NotificationResponse notificationResponse) async {
     print('_onSelectNotification called');
     String? payload = notificationResponse.payload;
+    print('📦 payload: $payload');
+    String reservationConfirmInfoUrl = 'https://www.sososi.com/reservation-confirm-info';
+
+    if (payload != null) {
+      if (payload == "reservationConfirmInfo") {
+        print('go to reservationConfirmInfo page');
+        navigatorKey.currentState?.push(
+          MaterialPageRoute(
+            builder: (context) => GenericWebView(url: reservationConfirmInfoUrl),
+          ),
+        );
+      }
+    }
 
   }
 
@@ -122,7 +135,9 @@ Future<void> main() async {
 
   // 앱이 포그라운드 상태에서 푸시 알림을 수신할 때 호출됩니다.
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    print('🔥 onMessage 들어옴');
     print("foreground message received: ${message.notification?.body}");
+    print('📦 message full: ${message.toString()}');
 
     RemoteNotification? notification = message.notification;
     AndroidNotification? android = message.notification?.android;
@@ -167,19 +182,30 @@ Future<void> main() async {
 
     // messageId를 String으로 변환
     String id = message.data['messageId']?.toString() ?? 'unknown';
-    String url = 'https://www.sososi.com/messages/$id';
+    String messagesUrl = 'https://www.sososi.com/messages/$id';
+    String reservationConfirmInfoUrl = 'https://www.sososi.com/reservation-confirm-info';
 
     // 푸시 알림이 클릭되었을 때의 처리
     if (message.data['targetPage'] != null) {
       // 원하는 페이지로 이동
       String targetPage = message.data['targetPage'];
+      print('🔍 targetPage: $targetPage');
+      print('🔍 navigatorKey.currentState: ${navigatorKey.currentState}');
+      print('🔍 reservationConfirmInfoUrl: $reservationConfirmInfoUrl');
 
       // 예시: Flutter의 Navigator를 이용하여 페이지 이동
       if (targetPage == "messages") {
         print('go to message page');
         navigatorKey.currentState?.push(
           MaterialPageRoute(
-            builder: (context) => GenericWebView(url: url),
+            builder: (context) => GenericWebView(url: messagesUrl),
+          ),
+        );
+      } else if (targetPage == "reservationConfirmInfo") {
+        print('go to reservationConfirmInfo page');
+        navigatorKey.currentState?.push(
+          MaterialPageRoute(
+            builder: (context) => GenericWebView(url: reservationConfirmInfoUrl),
           ),
         );
       } else {
