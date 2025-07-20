@@ -645,7 +645,7 @@ class _NearbyMapScreenState extends State<NearbyMapScreen> {
                   return Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
                       boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8)],
                     ),
                     child: _buildListContent(scrollController),
@@ -772,7 +772,8 @@ class _NearbyMapScreenState extends State<NearbyMapScreen> {
 // ✅ 전체 리스트 컨텐츠
   Widget _buildListContent(ScrollController scrollController) {
     return ListView.builder(
-      controller: scrollController, // ✅ 여기에 우리가 관리하는 컨트롤러 적용
+      controller: scrollController, // 여기에 우리가 관리하는 컨트롤러 적용
+      padding: const EdgeInsets.only(top: 30),
       itemCount: _nearbyLocations.length,
       itemBuilder: (context, index) {
         final item = _nearbyLocations[index];
