@@ -23,7 +23,10 @@ class _NearbyMapScreenState extends State<NearbyMapScreen> {
   List<Map<String, dynamic>> _originalLocations = [];
   bool _isFiltered = false; // 🔑 필터 상태 여부
   final DraggableScrollableController _draggableController = DraggableScrollableController();
+  final ScrollController _scrollController = ScrollController(); // ✅ 추가
+
   double _lastScrollSize = 0.2; // 사용자가 마지막으로 내려둔 비율
+  double _savedScrollOffset = 0.0; // ✅ 추가
 
   @override
   void initState() {
@@ -32,6 +35,11 @@ class _NearbyMapScreenState extends State<NearbyMapScreen> {
     _draggableController.addListener(() {
       _lastScrollSize = _draggableController.size;
       print('📌 저장된 스크롤 비율: $_lastScrollSize');
+    });
+
+    _scrollController.addListener(() {
+      _savedScrollOffset = _scrollController.offset;
+      // print('📌 저장된 offset: $_savedScrollOffset');
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -600,10 +608,22 @@ class _NearbyMapScreenState extends State<NearbyMapScreen> {
                 minChildSize: 0.1,
                 maxChildSize: 1.0,
                 builder: (context, scrollController) {
-                  _draggableController!.addListener(() {
-                    _lastScrollSize = _draggableController!.size;
-                    print('📌 저장된 스크롤 비율: $_lastScrollSize');
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (_scrollController.hasClients) {
+                      _scrollController.jumpTo(_savedScrollOffset); // ✅ 저장된 위치로 점프
+                    }
                   });
+
+                  // // 이 시점에서 jumpTo로 복원
+                  // WidgetsBinding.instance.addPostFrameCallback((_) {
+                  //   if (_draggableController.size != _lastScrollSize) {
+                  //     _draggableController.jumpTo(_lastScrollSize);
+                  //   }
+                  // });
+                  // _draggableController!.addListener(() {
+                  //   _lastScrollSize = _draggableController!.size;
+                  //   print('📌 저장된 스크롤 비율: $_lastScrollSize');
+                  // });
 
                   return Container(
                     decoration: BoxDecoration(
@@ -735,7 +755,7 @@ class _NearbyMapScreenState extends State<NearbyMapScreen> {
 // ✅ 전체 리스트 컨텐츠
   Widget _buildListContent(ScrollController scrollController) {
     return ListView.builder(
-      controller: scrollController,
+      controller: _scrollController, // ✅ 여기에 우리가 관리하는 컨트롤러 적용
       itemCount: _nearbyLocations.length,
       itemBuilder: (context, index) {
         final item = _nearbyLocations[index];
