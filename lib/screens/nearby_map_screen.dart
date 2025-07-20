@@ -7,6 +7,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'class_detail_webview.dart';
+
 class NearbyMapScreen extends StatefulWidget {
   const NearbyMapScreen({super.key});
 
@@ -661,6 +663,7 @@ class _NearbyMapScreenState extends State<NearbyMapScreen> {
 // ✅ 단일 클래스 카드 위젯
   Widget _buildSingleClassCard(Map<String, dynamic> item) {
     final images = item['class_images'] as List<dynamic>?;
+    final classNo = item['class_no']; // ← 상세 페이지 이동 시 사용할 ID
 
     return Material(
       elevation: 8,
@@ -670,6 +673,7 @@ class _NearbyMapScreenState extends State<NearbyMapScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start, // ← 왼쪽 정렬
           children: [
             if (images != null && images.isNotEmpty)
               SizedBox(
@@ -701,10 +705,42 @@ class _NearbyMapScreenState extends State<NearbyMapScreen> {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 4),
-            Text(
-              '거리: ${item['distance']?.toStringAsFixed(2)}km',
-              style: TextStyle(color: Colors.grey[600]),
+            const SizedBox(height: 8),
+            // Text(
+            //   '거리: ${item['distance']?.toStringAsFixed(2)}km',
+            //   style: TextStyle(color: Colors.grey[600]),
+            // ),
+            // const SizedBox(height: 12),
+            // 🔄 여기를 Row로!
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '거리: ${item['distance']?.toStringAsFixed(2)}km',
+                  style: TextStyle(color: Colors.grey[600]),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    final classNo = item['class_no'];
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => ClassDetailWebView(classNo: classNo)),
+                    );
+                    // Navigator.pushNamed(context, '/class/$classNo');
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF968ee6),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 9),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    visualDensity: VisualDensity.compact, // ← 버튼 내부 여백 조절
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap, // ← 터치 영역 최소화
+                  ),
+                  child: const Text("자세히 보기", style: TextStyle(fontSize: 14)),
+                ),
+              ],
             ),
           ],
         ),
@@ -779,11 +815,27 @@ class _NearbyMapScreenState extends State<NearbyMapScreen> {
         final item = _nearbyLocations[index];
         final images = item['class_images'] as List<dynamic>?;
 
+        void handleTap() {
+          final lat = (item['lat'] as num).toDouble();
+          final lng = (item['lng'] as num).toDouble();
+
+          _mapController.animateCamera(
+            CameraUpdate.newLatLng(LatLng(lat, lng)),
+          );
+
+          setState(() {
+            _isFiltered = true;
+            _nearbyLocations = [item];
+          });
+        }
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (images != null && images.isNotEmpty)
-              SizedBox(
+        GestureDetector( // ✅ 이미지 블럭 전체에 탭 적용
+          onTap: handleTap,
+          child: SizedBox(
                 height: 160,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
@@ -805,22 +857,11 @@ class _NearbyMapScreenState extends State<NearbyMapScreen> {
                   },
                 ),
               ),
+            ),
             ListTile(
               title: Text(item['title'] ?? '클래스 제목 없음'),
               subtitle: Text('거리: ${item['distance']?.toStringAsFixed(2)}km'),
-              onTap: () {
-                final lat = (item['lat'] as num).toDouble();
-                final lng = (item['lng'] as num).toDouble();
-
-                _mapController.animateCamera(
-                  CameraUpdate.newLatLng(LatLng(lat, lng)),
-                );
-
-                setState(() {
-                  _isFiltered = true;
-                  _nearbyLocations = [item];
-                });
-              },
+              onTap: handleTap,
             ),
             const Divider(),
           ],
