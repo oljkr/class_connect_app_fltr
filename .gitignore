@@ -46,3 +46,13 @@ app.*.map.json
 /android/app/google-services_before.json
 
 .env
+
+# Firebase secrets - Do NOT commit
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+
+# Firebase Admin SDK (예시)
+**/firebase-adminsdk-*.json
+
+# 기타 민감한 키
+*.keystore
