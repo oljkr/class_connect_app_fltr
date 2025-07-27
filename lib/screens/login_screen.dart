@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:webview_cookie_manager/webview_cookie_manager.dart';
 import 'home_screen.dart';
 import 'dart:ui'; // ImageFilter를 사용하기 위해 추가
 import 'package:flutter_svg/flutter_svg.dart'; // flutter_svg 패키지 임포트
@@ -25,36 +28,41 @@ class _LoginScreenState extends State<LoginScreen> {
   Session? session;
   bool _handledLoginRedirect = false;
   final supabase = Supabase.instance.client;
+  final cookieManager = WebviewCookieManager();
 
   @override
   void initState() {
     super.initState();
 
-    session = Supabase.instance.client.auth.currentSession;
-    _authStateSubscription = Supabase.instance.client.auth.onAuthStateChange.listen((data) {
-      final AuthChangeEvent event = data.event;
-
-      if (event == AuthChangeEvent.signedIn && !_handledLoginRedirect) {
-        _handledLoginRedirect = true;
-        print('User is signed in');
-
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(
-            builder: (context) =>
-                HomeScreen(isFirstRun: false, initialIndex: 2),
-          ),
-              (Route<dynamic> route) => false, // 모든 이전 경로를 제거
-        );
-
-      }
-    });
+    // // Supabase의 인증 상태 변경을 감지하는 리스너를 설정
+    // // 사용자가 로그인(SignIn) 상태가 되었을 때 자동으로 홈 화면(initialIndex: 2, 찜 탭)으로 이동시키는 용도였음
+    // // 단, 현재는 로그인 후 이동 처리를 직접 함수에서 제어하고 있어 중복 이동 이슈가 발생함
+    // // 따라서 이 코드는 잠시 주석 처리하여 자동 리디렉션을 막고, 추후 필요 시 로직 개선하여 재활용 가능
+    // session = Supabase.instance.client.auth.currentSession;
+    // _authStateSubscription = Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+    //   final AuthChangeEvent event = data.event;
+    //
+    //   if (event == AuthChangeEvent.signedIn && !_handledLoginRedirect) {
+    //     _handledLoginRedirect = true;
+    //     print('User is signed in');
+    //
+    //     Navigator.of(context).pushAndRemoveUntil(
+    //       MaterialPageRoute(
+    //         builder: (context) =>
+    //             HomeScreen(isFirstRun: false, initialIndex: 2),
+    //       ),
+    //           (Route<dynamic> route) => false, // 모든 이전 경로를 제거
+    //     );
+    //
+    //   }
+    // });
   }
 
 
 
   @override
   void dispose() {
-    _authStateSubscription.cancel();
+    // _authStateSubscription.cancel();
     super.dispose();
   }
 
@@ -176,13 +184,16 @@ class _LoginScreenState extends State<LoginScreen> {
         //       (Route<dynamic> route) => false, // 모든 이전 경로를 제거
         // );
 
-        Navigator.pop(context); // 이전 화면으로 복귀
+        // Navigator.pop(context); // 이전 화면으로 복귀
+        Navigator.pop(context, 'login_success'); // ✅ 로그인 성공을 알림
       } else {
         print('Supabase sign-in failed.');
         setState(() {
           _errorMessage = 'Supabase sign-in failed.';
         });
       }
+
+
     } catch (e) {
       print('An error occurred during Google sign-in: $e');
       if (e is PlatformException) {
