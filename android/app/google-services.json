@@ -1,0 +1,121 @@
+{
+  "project_info": {
+    "project_number": "224870115987",
+    "project_id": "pushnotidemo-e9c59",
+    "storage_bucket": "pushnotidemo-e9c59.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:224870115987:android:3b43ee759491c222ee3b66",
+        "android_client_info": {
+          "package_name": "com.sososi.class_connect_app_fltr"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "224870115987-im35vr8ud0i4fi1gq73e3vpp601vnht9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.sososi.class_connect_app_fltr",
+            "certificate_hash": "184fab7e033377225bba360159d9bb2c99ed4426"
+          }
+        },
+        {
+          "client_id": "224870115987-j74q5ihgta2uhbkav0vn67dejf400ni3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.sososi.class_connect_app_fltr",
+            "certificate_hash": "5d801fa58d7141cfc2c0d0c9ddc84bedbe2e7410"
+          }
+        },
+        {
+          "client_id": "224870115987-n99i142mi1s8scvofmfh4il695b7n2vm.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.sososi.class_connect_app_fltr",
+            "certificate_hash": "3b469d7cdb4b1e21876444df46b09137f6943a21"
+          }
+        },
+        {
+          "client_id": "224870115987-uomm8aoph3vt823da16i2hajlboq9mpk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCxuhU38FDxCQjGZ2rIoR4Qk23DmXZeT3E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "224870115987-uomm8aoph3vt823da16i2hajlboq9mpk.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:224870115987:android:4086b92d1ce7a6c2ee3b66",
+        "android_client_info": {
+          "package_name": "com.whisperofstar.tarotapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "224870115987-uomm8aoph3vt823da16i2hajlboq9mpk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCxuhU38FDxCQjGZ2rIoR4Qk23DmXZeT3E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "224870115987-uomm8aoph3vt823da16i2hajlboq9mpk.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:224870115987:android:42bf11b9df3ba431ee3b66",
+        "android_client_info": {
+          "package_name": "kr.wishtarot.tarotapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "224870115987-uomm8aoph3vt823da16i2hajlboq9mpk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCxuhU38FDxCQjGZ2rIoR4Qk23DmXZeT3E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "224870115987-uomm8aoph3vt823da16i2hajlboq9mpk.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
