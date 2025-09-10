@@ -1,5 +1,4 @@
 import 'package:app_settings/app_settings.dart';
-import 'package:class_connect_app_fltr/screens/signature_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
@@ -142,8 +141,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       case 1:
         return const NearbyMapScreen();
       case 2:
-        // return const LikedWebView();
-        return SignatureScreen();
+        return const LikedWebView();
       case 3:
         return const ReservationsWebView();
       case 4:

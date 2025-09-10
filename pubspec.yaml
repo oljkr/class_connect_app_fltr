@@ -61,10 +61,6 @@ dependencies:
   intl: ^0.20.2
   firebase_remote_config: ^5.4.7
   url_launcher: ^6.3.1
-  signature: ^5.5.0
-  http: ^1.4.0
-  http_parser: ^4.0.2
-  mime: ^2.0.0
 
 
 dev_dependencies:
